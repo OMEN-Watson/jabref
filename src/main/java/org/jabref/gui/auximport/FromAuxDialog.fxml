@@ -10,6 +10,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.control.ComboBox?>
 <DialogPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="650.0" prefWidth="500.0"
             xmlns="http://javafx.com/javafx/8.0.121" fx:controller="org.jabref.gui.auximport.FromAuxDialog">
     <content>
@@ -31,6 +32,12 @@
                 <TextArea fx:id="statusInfos" editable="false" prefHeight="300.0"/>
                 <Label text="%Unknown BibTeX entries:"/>
                 <ListView fx:id="notFoundList" prefHeight="200"/>
+            </VBox>
+            <VBox>
+                <HBox spacing="4" alignment="CENTER_LEFT">
+                    <Label text="%Library to import into"/>
+                    <ComboBox fx:id="libraryListView" layoutX="16.0" layoutY="52.0"/>
+                </HBox>
             </VBox>
         </VBox>
     </content>
