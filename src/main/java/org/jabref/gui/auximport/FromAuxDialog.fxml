@@ -22,6 +22,10 @@
                     <Button onAction="#browseButtonClicked" text="%Browse"/>
                 </HBox>
                 <Button defaultButton="true" onAction="#parseActionPerformed" text="%Parse"/>
+                <HBox spacing="4" alignment="CENTER_LEFT">
+                    <Label text="%Library to import into"/>
+                    <ComboBox fx:id="libraryListView" layoutX="16.0" layoutY="52.0"/>
+                </HBox>
             </VBox>
             <VBox spacing="5">
                 <Label text="%Result">
@@ -32,12 +36,6 @@
                 <TextArea fx:id="statusInfos" editable="false" prefHeight="300.0"/>
                 <Label text="%Unknown BibTeX entries:"/>
                 <ListView fx:id="notFoundList" prefHeight="200"/>
-            </VBox>
-            <VBox>
-                <HBox spacing="4" alignment="CENTER_LEFT">
-                    <Label text="%Library to import into"/>
-                    <ComboBox fx:id="libraryListView" layoutX="16.0" layoutY="52.0"/>
-                </HBox>
             </VBox>
         </VBox>
     </content>

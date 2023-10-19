@@ -1,10 +1,12 @@
 package org.jabref.gui.auximport;
 
 import java.nio.file.Path;
+import java.util.Optional;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -12,14 +14,18 @@ import javafx.scene.control.TextField;
 import org.jabref.gui.DialogService;
 import org.jabref.gui.JabRefFrame;
 import org.jabref.gui.LibraryTab;
+import org.jabref.gui.StateManager;
 import org.jabref.gui.theme.ThemeManager;
 import org.jabref.gui.util.BaseDialog;
 import org.jabref.gui.util.FileDialogConfiguration;
+import org.jabref.gui.util.ViewModelListCellFactory;
 import org.jabref.logic.auxparser.AuxParser;
 import org.jabref.logic.auxparser.AuxParserResult;
 import org.jabref.logic.auxparser.DefaultAuxParser;
 import org.jabref.logic.l10n.Localization;
+import org.jabref.logic.shared.DatabaseLocation;
 import org.jabref.logic.util.StandardFileType;
+import org.jabref.logic.util.io.FileUtil;
 import org.jabref.model.database.BibDatabase;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.preferences.PreferencesService;
@@ -31,8 +37,10 @@ import jakarta.inject.Inject;
  * A wizard dialog for generating a new sub database from existing TeX AUX file
  */
 public class FromAuxDialog extends BaseDialog<Void> {
-
+    public ComboBox<BibDatabaseContext> libraryListView;
     private final LibraryTab libraryTab;
+    private LibraryTab librarySelectedTab;
+
     @FXML private ButtonType generateButtonType;
     private final Button generateButton;
     @FXML private TextField auxFileField;
@@ -43,6 +51,7 @@ public class FromAuxDialog extends BaseDialog<Void> {
     @Inject private PreferencesService preferences;
     @Inject private DialogService dialogService;
     @Inject private ThemeManager themeManager;
+    @Inject private StateManager stateManager;
 
     public FromAuxDialog(JabRefFrame frame) {
         libraryTab = frame.getCurrentLibraryTab();
@@ -52,6 +61,25 @@ public class FromAuxDialog extends BaseDialog<Void> {
                   .load()
                   .setAsDialogPane(this);
 
+        libraryListView.setEditable(false);
+        libraryListView.getItems().addAll(stateManager.getOpenDatabases());
+        new ViewModelListCellFactory<BibDatabaseContext>()
+                .withText(database -> {
+                    Optional<String> dbOpt = Optional.empty();
+                    if (database.getDatabasePath().isPresent()) {
+                        dbOpt = FileUtil.getUniquePathFragment(stateManager.collectAllDatabasePaths(), database.getDatabasePath().get());
+                    }
+                    if (database.getLocation() == DatabaseLocation.SHARED) {
+                        return database.getDBMSSynchronizer().getDBName() + " [" + Localization.lang("shared") + "]";
+                    }
+
+                    if (dbOpt.isEmpty()) {
+                        return Localization.lang("untitled");
+                    }
+
+                    return dbOpt.get();
+                })
+                .install(libraryListView);
         generateButton = (Button) this.getDialogPane().lookupButton(generateButtonType);
         generateButton.setDisable(true);
         generateButton.defaultButtonProperty().bind(generateButton.disableProperty().not());
@@ -70,7 +98,9 @@ public class FromAuxDialog extends BaseDialog<Void> {
     private void parseActionPerformed() {
         notFoundList.getItems().clear();
         statusInfos.setText("");
-        BibDatabase refBase = libraryTab.getDatabase();
+
+//        BibDatabase refBase = libraryTab.getDatabase();
+        BibDatabase refBase = libraryListView.getSelectionModel().getSelectedItem().getDatabase();
         String auxName = auxFileField.getText();
 
         if ((auxName != null) && (refBase != null) && !auxName.isEmpty()) {
