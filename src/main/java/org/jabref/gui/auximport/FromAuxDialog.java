@@ -80,6 +80,7 @@ public class FromAuxDialog extends BaseDialog<Void> {
                     return dbOpt.get();
                 })
                 .install(libraryListView);
+        libraryListView.getSelectionModel().select(libraryTab.getBibDatabaseContext());
         generateButton = (Button) this.getDialogPane().lookupButton(generateButtonType);
         generateButton.setDisable(true);
         generateButton.defaultButtonProperty().bind(generateButton.disableProperty().not());
@@ -100,6 +101,11 @@ public class FromAuxDialog extends BaseDialog<Void> {
         statusInfos.setText("");
 
 //        BibDatabase refBase = libraryTab.getDatabase();
+        if (libraryListView.getSelectionModel().getSelectedItem() == null) {
+            dialogService.showErrorDialogAndWait(Localization.lang("Aux"),
+                    Localization.lang("please select one library in the combox below"));
+            return;
+        }
         BibDatabase refBase = libraryListView.getSelectionModel().getSelectedItem().getDatabase();
         String auxName = auxFileField.getText();
 
